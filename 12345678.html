@@ -1,0 +1,131 @@
+    <!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>Class Breaks Renderer</title>
+ <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+    <link rel="stylesheet" href="http://localhost/3.9/js/esri/css/esri.css">
+    <style>
+        html,
+        body,
+        #map {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+    </style>
+    <script src="http://localhost/3.9/"></script>
+    <script>
+        var map;
+        var featureLayer;
+        require([
+            "esri/map",
+            "esri/layers/CSVLayer",
+            "esri/config",
+            "esri/InfoTemplate", "esri/symbols/SimpleMarkerSymbol",
+            "esri/renderers/ClassBreaksRenderer",
+            "esri/Color", "dojo/dom-style", "dojo/domReady!"
+        ], function(
+            Map, CSVLayer, esriConfig,
+            InfoTemplate, SimpleMarkerSymbol,
+            ClassBreaksRenderer,
+            Color, domStyle
+        ) {
+            map = new Map("map", {
+                basemap: "streets",
+                center: [-98.215, 38.382],
+                zoom: 7,
+                slider: false
+            });
+
+            esriConfig.defaults.io.corsEnabledServers.push("earthquake.usgs.gov"); // supports CORS
+            var symbol1 = new SimpleMarkerSymbol();
+            symbol1.setColor(new Color([150, 150, 150, 0.5]));
+
+
+            var renderer = new ClassBreaksRenderer(symbol1, "depth");
+            renderer.addBreak(0, 25, new SimpleMarkerSymbol().setColor(new Color([255, 240, 245, 0.5])));
+            renderer.addBreak(25, 100, new SimpleMarkerSymbol().setColor(new Color([255, 192, 203, 0.5])));
+            renderer.addBreak(100, 175, new SimpleMarkerSymbol().setColor(new Color([255, 105, 180, 0.5])));
+            renderer.addBreak(175, 250, new SimpleMarkerSymbol().setColor(new Color([255, 20, 147, 0.5])));
+            renderer.addBreak(250, Infinity, new SimpleMarkerSymbol().setColor(new Color([220, 20, 60, 0.5])));
+
+            var a = 1;
+            $(function() {
+                $("#btn_change").click(function() {
+                    if (a == 1) {
+                        map.removeLayer(featureLayer);
+                        renderer = null;
+                        renderer = new ClassBreaksRenderer(symbol1, "depth");
+                        renderer.addBreak(0, 25, new SimpleMarkerSymbol({
+                            "color": [255, 240, 245, 0.5],
+                            "size": 20,
+                            "type": "esriSMS",
+                            "style": "esriSMSCross"
+                        }));
+                        renderer.addBreak(25, 100, new SimpleMarkerSymbol({
+                            "color": [255, 240, 245, 0.5],
+                            "size": 40
+                        }));
+                        renderer.addBreak(100, 175, new SimpleMarkerSymbol().setSize("60"));
+                        renderer.addBreak(175, Infinity, new SimpleMarkerSymbol().setSize("80"));
+                        a=2;
+                    } else {
+                        map.removeLayer(featureLayer);
+                        renderer = null;
+                        renderer = new ClassBreaksRenderer(symbol1, "depth");
+                        renderer.addBreak(0, 25, new SimpleMarkerSymbol().setColor(new Color([255, 240, 245, 0.5])));
+                        renderer.addBreak(25, 100, new SimpleMarkerSymbol().setColor(new Color([255, 192, 203, 0.5])));
+                        renderer.addBreak(100, 175, new SimpleMarkerSymbol().setColor(new Color([255, 105, 180, 0.5])));
+                        renderer.addBreak(175, 250, new SimpleMarkerSymbol().setColor(new Color([255, 20, 147, 0.5])));
+                        renderer.addBreak(250, Infinity, new SimpleMarkerSymbol().setColor(new Color([220, 20, 60, 0.5])));
+                        a=1;
+
+                    }
+
+                    var infoTemplate = new InfoTemplate("${NAME}", "${*}");
+                    featureLayer = new CSVLayer("all_month2.csv", {
+                        copyright: "USGS.gov"
+                    });
+
+                    //  featureLayer.setDefinitionExpression("STATE_NAME = 'Kansas'");
+                    featureLayer.setInfoTemplate(infoTemplate);
+                    featureLayer.setRenderer(renderer);
+                    map.addLayer(featureLayer);
+
+                });
+            });
+
+
+
+            var infoTemplate = new InfoTemplate("${NAME}", "${*}");
+            featureLayer = new CSVLayer("all_month2.csv", {
+                copyright: "USGS.gov"
+            });
+
+           
+            featureLayer.setInfoTemplate(infoTemplate);
+            featureLayer.setRenderer(renderer);
+            map.addLayer(featureLayer);
+        });
+
+    </script>
+</head>
+
+<body>
+    <div> <button id="btn_change">adasd</button></div>
+
+    <div id="map"></div>
+
+</body>
+<script>
+
+
+</script>
+
+
+</html>
